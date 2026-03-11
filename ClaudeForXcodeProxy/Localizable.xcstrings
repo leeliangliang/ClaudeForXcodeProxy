@@ -282,6 +282,23 @@
         }
       }
     },
+    "result.env.unset" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Environment variable cleared:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已清除环境变量:"
+          }
+        }
+      }
+    },
     "result.no.config" : {
       "extractionState" : "manual",
       "localizations" : {

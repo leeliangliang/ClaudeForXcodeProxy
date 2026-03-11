@@ -54,14 +54,28 @@ class LaunchAgentManager {
     func removeConfiguration() -> Result<String, Error> {
         var messages: [String] = []
 
-        // 卸载并删除 plist
-        _ = runLaunchctl(args: ["bootout", "gui/\(getuid())", plistURL.path])
+        // 1. 卸载 LaunchAgent（优先使用 service label 格式，失败则用 plist 路径）
         if FileManager.default.fileExists(atPath: plistURL.path) {
+            let bootoutResult = runLaunchctl(args: ["bootout", "gui/\(getuid())/\(plistName)"])
+            if case .failure = bootoutResult {
+                // 降级：尝试用 plist 路径方式卸载
+                _ = runLaunchctl(args: ["bootout", "gui/\(getuid())", plistURL.path])
+            }
+
+            // 2. 删除 plist 文件
             do {
                 try FileManager.default.removeItem(at: plistURL)
                 messages.append("✅ \(String(localized: "result.deleted \(plistURL.lastPathComponent)"))")
             } catch {
                 return .failure(error)
+            }
+        }
+
+        // 3. 清除当前会话中的环境变量
+        for key in ["ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN"] {
+            let result = runLaunchctl(args: ["unsetenv", key])
+            if case .success = result {
+                messages.append("✅ \(String(localized: "result.env.unset")) \(key)")
             }
         }
 
